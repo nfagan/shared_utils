@@ -27,7 +27,7 @@ assert( ismatrix(data) && ~isvector(data), 'Data must be a 2d matrix.' );
 
 N = size( data, 2 );
 
-n_steps = floor( N / step_size );
+n_steps = ceil( N / step_size );
 
 stop = min( N, window_size );
 start = 0;
@@ -45,5 +45,7 @@ while ( stop <= N )
   stop = min( N, stop );
   cols = 1:(stop-start);
 end
+
+out = out(:, :, 1:stp);
 
 end
