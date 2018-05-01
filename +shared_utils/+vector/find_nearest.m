@@ -1,4 +1,4 @@
-function out = find_nearest(a, x)
+function index = find_nearest(a, x)
 
 %   FIND_NEAREST -- Find index of element closest to array of elements.
 %
@@ -6,8 +6,20 @@ function out = find_nearest(a, x)
 %       - `a` (double)
 %       - `x` (double)
 %     OUT:
-%       - `out` (double)
+%       - `index` (double)
 
-[~, out] = min( abs(a - x) );
+[~, index] = histc( x, a );
+
+if ( index == 0 || index > length(a) )
+  fprintf( '\n inexact' );
+  [~, index] = min( abs(a - x) );
+  return;
+end
+
+check = abs( x - a(index) ) < abs( x - a(index+1) );
+
+if ( ~check )
+  index = index + 1;
+end
 
 end
