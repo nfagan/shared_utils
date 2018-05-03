@@ -22,13 +22,29 @@ if ( ~isvector(a) )
   a = a(:);
 end
 
+if ( numel(a) == 0 )
+  inds = [];
+  l = [];
+  return;
+end
+
 inds = find( diff(a) == 1 ) + 1;
 
 if ( a(1) ), inds = [ 1, inds ]; end
 
 if ( nargout() == 1 ), return; end
 
+if ( numel(inds) == 0 )
+  l = [];
+  return;
+end
+
 stops = shared_utils.logical.find_all_starts( ~a );
+
+if ( isempty(stops) )
+  l = 1;
+  return;
+end
 
 l = zeros( size(inds) );
 
