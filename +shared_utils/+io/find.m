@@ -10,7 +10,9 @@ function out = find(path, ext, rec)
 %
 %     directories = find( cd, 'folders' ... ); absolute directory paths.
 %
-%     ... = find( PATHS, ... ) where PATHS is a cell array of strings 
+%     files = find( DIRS, ... ) where DIRS is a cell array of strings,
+%     works as above, for each directory in `DIRS`, concatenating the
+%     results into a single array `files`.
 %
 %     IN:
 %       - `path` (char)
