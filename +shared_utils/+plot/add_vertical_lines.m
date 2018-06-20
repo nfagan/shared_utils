@@ -10,7 +10,7 @@ function add_vertical_lines(axs, xs, linespec)
 %       - `xs` (double)
 %       - `linespec` (char)
 
-if ( nargin < 3 )
+if ( nargin < 3 || isempty(linespec) )
   linespec = 'k--';
 end
 

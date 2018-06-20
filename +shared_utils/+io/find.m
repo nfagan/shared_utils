@@ -10,6 +10,8 @@ function out = find(path, ext, rec)
 %
 %     directories = find( cd, 'folders' ... ); absolute directory paths.
 %
+%     ... = find( PATHS, ... ) where PATHS is a cell array of strings 
+%
 %     IN:
 %       - `path` (char)
 %       - `ext` (char)
@@ -18,11 +20,26 @@ function out = find(path, ext, rec)
 if ( nargin < 3 ), rec = false; end
 
 import shared_utils.assertions.*;
-import shared_utils.io.dirnames;
 
-assert__isa( path, 'char' );
+path = shared_utils.cell.ensure_cell( path );
+
+assert__is_cellstr_or_char( path, 'char' );
 assert__isa( ext, 'char' );
 assert__isa( rec, 'logical' );
+
+out = {};
+
+for i = 1:numel(path)
+  out = [ out, find_one(path{i}, ext, rec) ];
+end
+
+end
+
+function out = find_one(path, ext, rec)
+
+import shared_utils.io.dirnames;
+import shared_utils.assertions.*;
+
 assert__is_dir( path );
 
 if ( ~rec )
@@ -31,7 +48,6 @@ if ( ~rec )
 end
 
 out = find_impl( path, ext, {} );
-
 end
 
 function out = find_impl(path, ext, out)
