@@ -1,4 +1,4 @@
-function add_vertical_lines(axs, xs, linespec)
+function hs = add_vertical_lines(axs, xs, linespec)
 
 %   ADD_VERTICAL_LINES -- Overlay vertical lines on axes.
 %
@@ -18,11 +18,13 @@ inds = combvec( 1:numel(axs), 1:numel(xs) );
 
 ncombs = size( inds, 2 );
 
+hs = gobjects( 1, ncombs );
+
 for i = 1:ncombs
   ax = axs(inds(1, i));
   x = xs(inds(2, i));
   
-  plot( ax, [x; x], get(ax, 'ylim'), linespec );
+  hs(i) = plot( ax, [x; x], get(ax, 'ylim'), linespec );
 end
 
 end
