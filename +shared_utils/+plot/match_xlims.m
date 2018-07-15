@@ -1,5 +1,10 @@
 function new_lims = match_xlims(axs)
 
+if ( numel(axs) == 1 )
+  new_lims = get( axs, 'xlim' );
+  return;
+end
+
 lims = cell2mat( get(axs(:), 'xlim') );
 
 mins = min( lims(:, 1) );
