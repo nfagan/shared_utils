@@ -48,7 +48,7 @@ n_inds = size( inds, 2 );
 vals = cell( 1, n_cells );
 
 full_set = varargin;
-ps = cell( n_cells, 1 );
+ps = cell( n_inds, 1 );
 
 for i = 1:n_inds
   current = inds(:, i);
