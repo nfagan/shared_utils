@@ -5,6 +5,13 @@ function require_dir(pathstr)
 %     IN:
 %       - `pathstr` (char) -- Path to the folder to create.
 
+if ( iscellstr(pathstr) )
+  for i = 1:numel(pathstr)
+    shared_utils.io.require_dir(pathstr{i}); 
+  end
+  return;
+end
+
 shared_utils.assertions.assert__isa( pathstr, 'char', 'the path string' );
 if ( exist(pathstr, 'dir') ~= 7 )
   try
