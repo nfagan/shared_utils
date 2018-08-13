@@ -1,4 +1,4 @@
-function rect(rect, ax)
+function h = rect(rect, ax)
 
 assert( numel(rect) == 4, 'Specify a rect as a 4-element vector.' );
 
@@ -9,9 +9,9 @@ x = rect(1);
 y = rect(2);
 
 if ( nargin < 2 )
-  rectangle( 'position', [x, y, w, h] );
+  h = rectangle( 'position', [x, y, w, h] );
 else
-  rectangle( 'position', [x, y, w, h], 'parent', ax );
+  h = rectangle( 'position', [x, y, w, h], 'parent', ax );
 end
 
 end
