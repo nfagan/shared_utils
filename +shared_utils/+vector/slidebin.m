@@ -21,28 +21,32 @@ if ( nargin < 4 ), discard_uneven = false; end
 validateattributes( win, {'double'}, {'scalar'}, 2 );
 validateattributes( step, {'double'}, {'scalar'}, 3 );
 
-b = {};
-
-if ( isempty(win) ), return; end
+if ( isempty(win) ), b = {}; return; end
 
 N = numel( a );
 start = 1;
 first = true;
 
-while ( first || stop < N )
-  stop = min( start + win - 1, numel(a) );
+b = cell( 1, floor(N / step) );
+assign_stp = 1;
+
+while ( first || stop <= N )
+  stop = min( start + win - 1, N );
   
   ind = start:stop;
   
-  if ( discard_uneven && numel(ind) ~= win )
+  if ( isempty(ind) || (discard_uneven && numel(ind) ~= win) )
     break;
   end
   
-  b{end+1} = a(ind);
+  b{assign_stp} = a(ind);
   
   start = start + step;
+  assign_stp = assign_stp + 1;
   
   first = false;
 end
+
+b(assign_stp:end) = [];
 
 end
