@@ -30,7 +30,13 @@ end
 
 inds = find( diff(a) == 1 ) + 1;
 
-if ( a(1) ), inds = [ 1, inds ]; end
+if ( a(1) )
+  if ( isrow(inds) )
+    inds = [ 1, inds ];
+  else
+    inds = [ 1; inds ];
+  end
+end
 
 if ( nargout() == 1 ), return; end
 
