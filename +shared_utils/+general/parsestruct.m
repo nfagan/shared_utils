@@ -80,7 +80,7 @@ while ( stp <= N )
     assert( isstruct(args{stp}), ['Inputs must come in "name", value pairs' ...
       , ', or else be struct.'] );
     
-    s = [ s, bfw.struct2varargin(v) ];
+    s = [ s, shared_utils.general.struct2varargin(v) ];
     stp = stp + 1;
   end
 end
