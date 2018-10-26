@@ -1,4 +1,4 @@
-function starts = find_starts(vec, min_length)
+function [starts, lengths] = find_starts(vec, min_length)
 
 %   FIND_STARTS -- Return indices of the beginning of sequences of
 %     true values.
@@ -9,6 +9,9 @@ function starts = find_starts(vec, min_length)
 %     starts = ... find_logical_starts( [true, true, false, true], 2 ) only
 %     includes starts of sequences of at least 2 true values, and returns
 %     [1].
+%
+%     [..., lengths] = ... find_logical_starts(...) also returns the
+%     length of each sequence.
 %
 %     IN:
 %       - `vec` (logical)
@@ -55,5 +58,27 @@ if ( seq_length < min_length && vec(end) )
 end
 
 starts(stp:end) = [];
+
+if ( nargout > 1 )
+  lengths = get_lengths( vec, starts );
+end
+
+end
+
+function l = get_lengths(vec, starts)
+
+l = zeros( size(starts) );
+N = numel( vec );
+n_starts = numel( starts );
+
+for i = 1:n_starts
+  ptr = starts(i);
+  
+  while ( ptr <= N && vec(ptr) )
+    ptr = ptr + 1;    
+  end
+  
+  l(i) = ptr - starts(i);
+end
 
 end
