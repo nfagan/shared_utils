@@ -1,4 +1,4 @@
-function [starts, lengths] = find_starts(vec, min_length)
+function [starts, lengths] = find_starts(vec, min_length, at_most_n)
 
 %   FIND_STARTS -- Return indices of the beginning of sequences of
 %     true values.
@@ -9,6 +9,9 @@ function [starts, lengths] = find_starts(vec, min_length)
 %     starts = ... find_logical_starts( [true, true, false, true], 2 ) only
 %     includes starts of sequences of at least 2 true values, and returns
 %     [1].
+%
+%     starts = ... find_logical_starts( V, MIN, N ) finds at most the first
+%     `N` starts.
 %
 %     [..., lengths] = ... find_logical_starts(...) also returns the
 %     length of each sequence.
@@ -23,6 +26,7 @@ function [starts, lengths] = find_starts(vec, min_length)
 import shared_utils.assertions.*;
 
 if ( nargin < 2 ), min_length = 1; end
+if ( nargin < 3 ), at_most_n = Inf(); end
 
 assert__is_vector( vec );
 assert__isa( vec, 'logical' );
@@ -50,6 +54,8 @@ for i = 1:numel(vec)
       stp = stp - 1;
     end
   end
+  
+  if ( stp > at_most_n ), break; end
 end
 
 if ( seq_length < min_length && vec(end) )
