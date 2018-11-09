@@ -24,15 +24,18 @@ if ( nargin < 3 ), rec = false; end
 import shared_utils.assertions.*;
 
 path = shared_utils.cell.ensure_cell( path );
+ext = shared_utils.cell.ensure_cell( ext );
 
-assert__is_cellstr_or_char( path, 'char' );
-assert__isa( ext, 'char' );
+assert__is_cellstr_or_char( path, 'path' );
+assert__is_cellstr_or_char( ext, 'extension' );
 assert__isa( rec, 'logical' );
 
 out = {};
 
 for i = 1:numel(path)
-  out = [ out, find_one(path{i}, ext, rec) ];
+  for j = 1:numel(ext)
+    out = [ out, find_one(path{i}, ext{j}, rec) ];
+  end
 end
 
 end
