@@ -50,9 +50,17 @@ for i = 1:2:N
   if ( isfield(params, name) )
     params.(name) = args{i+1};
   else
-    error( '"%s" is not a recognized parameter name.', name );
+    error( get_error_str_unrecognized_param(fieldnames(params), name) );
   end
 end
+
+end
+
+function str = get_error_str_unrecognized_param(fields, name)
+
+base_text = sprintf( '"%s" is not a recognized parameter name.', name );
+field_text = sprintf( ' Options are:\n\n - %s', strjoin(sort(fields), '\n - ') );
+str = sprintf( '%s%s', base_text, field_text );
 
 end
 
