@@ -4,12 +4,15 @@ classdef LoopedMakeRunner < handle
     log_level = 'info';
     func_name = '';
     
+    files_aggregate_type = 'struct';
+    
     input_directories = {};
     output_directory = '';
     
     is_parallel = true;
     overwrite = false;
     save = true;
+    call_with_identifier = false;
     
     load_func = @shared_utils.io.fload;
     get_identifier_func = @shared_utils.pipeline.LoopedMakeRunner.default_get_identifier_func;
@@ -25,6 +28,7 @@ classdef LoopedMakeRunner < handle
   
   properties (Access = private, Constant = true)
     log_levels = { 'info', 'warn', 'progress', 'off' };
+    files_aggregate_types = { 'struct', 'containers.Map' };
   end
   
   methods    
@@ -133,6 +137,10 @@ classdef LoopedMakeRunner < handle
     function set.log_level(obj, val)      
       obj.log_level = validatestring( val, obj.log_levels );
     end
+    
+    function set.files_aggregate_type(obj, val)
+      obj.files_aggregate_type = validatestring( val, obj.files_aggregate_types );
+    end
   end
   
   methods (Access = private)
@@ -160,14 +168,16 @@ classdef LoopedMakeRunner < handle
       first_dir_name = obj.get_directory_name_func( obj.first_input_directory );
       rem_dirs = obj.remaining_input_directories;
       
-      files = struct();
-      files.(first_dir_name) = first_input_file;
+      files = obj.get_files_aggregate();
+      files = shared_utils.general.set( files, first_dir_name, first_input_file );
       
       for i = 1:numel(rem_dirs)
-        rem_dir_name = obj.get_directory_name_func( rem_dirs{i} );
         rem_dir = rem_dirs{i};
+        rem_dir_name = obj.get_directory_name_func( rem_dirs{i} );
+        
         c_file = obj.load_func( fullfile(rem_dir, identifier) );
-        files.(rem_dir_name) = c_file;
+        
+        files = shared_utils.general.set( files, rem_dir_name, c_file );
       end
     end
     
@@ -222,7 +232,12 @@ classdef LoopedMakeRunner < handle
         % should return one output, which will be conditionally saved in 
         % the directory given by `obj.output_directory`, depending on the
         % state of `obj.overwrite` and `obj.save`.
-        out_file = func( files, func_inputs{:} );
+        
+        if ( obj.call_with_identifier )
+          out_file = func( files, identifier, func_inputs{:} );
+        else
+          out_file = func( files, func_inputs{:} );
+        end
       
         if ( obj.save )
           shared_utils.io.require_dir( obj.output_directory );
@@ -274,8 +289,18 @@ classdef LoopedMakeRunner < handle
       obj.(func) = val;
     end
     
+    function f = get_files_aggregate(obj)
+      switch ( obj.files_aggregate_type )
+        case 'struct'
+          f = struct();
+        case 'containers.Map'
+          f = containers.Map();
+        otherwise
+          error( 'Unrecognized files_aggregate_type "%s".', obj.files_aggregate_type );
+      end
+    end
+    
     function o = get_outputs_empty_inputs(obj)
-      
       o = obj.get_default_output_status( '' );
       o = o(false);
     end
