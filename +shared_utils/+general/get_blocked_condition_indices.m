@@ -30,7 +30,7 @@ function v = get_blocked_condition_indices(n_blocks, block_size, n_conditions)
 %     OUT:
 %       - `v` (double)
 
-classes = { 'double' };
+classes = { 'double', 'single' };
 attrs = { 'scalar', 'positive', 'real', 'integer' };
 
 try

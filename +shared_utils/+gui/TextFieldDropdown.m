@@ -3,6 +3,7 @@ classdef TextFieldDropdown < handle
   properties (Access = public)
     parent;
     convert_logical;
+    retain_original_type;
   end
   
   properties (SetAccess = public, GetAccess = private)
@@ -23,12 +24,12 @@ classdef TextFieldDropdown < handle
   end
   
   methods
-    function obj = TextFieldDropdown()
-      obj.data = struct();
+    function obj = TextFieldDropdown(data)
       obj.to_string_funcs = struct();
       obj.from_string_funcs = struct();
       obj.parent = [];
       obj.convert_logical = true;
+      obj.retain_original_type = true;
       
       obj.on_change = @(old_data, new_data, target) 1;
       
@@ -36,6 +37,12 @@ classdef TextFieldDropdown < handle
       obj.edit_panel = [];
       obj.dropdown_panel = [];
       obj.label_panel = [];
+      
+      if ( nargin < 1 )
+        obj.data = struct();
+      else
+        obj.set_data( data );
+      end
     end
     
     function delete(obj)
@@ -78,6 +85,12 @@ classdef TextFieldDropdown < handle
     
     function set.convert_logical(obj, val)
       prop = 'convert_logical';
+      validateattributes( val, {'logical', 'double'}, {'scalar'}, prop, prop );
+      obj.(prop) = logical( val );
+    end
+    
+    function set.retain_original_type(obj, val)
+      prop = 'retain_original_type';
       validateattributes( val, {'logical', 'double'}, {'scalar'}, prop, prop );
       obj.(prop) = logical( val );
     end
@@ -129,6 +142,10 @@ classdef TextFieldDropdown < handle
           , 'Position', position ...
           , 'Callback', @handle_edit ...
         );
+      
+        if ( ischar(val) && obj.retain_original_type )
+          set( obj.edit_panel, 'BackgroundColor', [0.9, 0.9, 0.9] );
+        end
       else
         obj.label_panel = uicontrol( c_parent ...
           , 'Style', 'text' ...
@@ -164,9 +181,14 @@ classdef TextFieldDropdown < handle
           str = source.String;
           
           previous_value = obj.data.(targ);
+          previous_class = func2str( obj.from_string_funcs.(targ) );
           
-          try 
-            value = shared_utils.gui.TextFieldDropdown.isolated_eval( str );
+          try
+            if ( strcmp(previous_class, 'char') && obj.retain_original_type )
+              value = str;
+            else
+              value = shared_utils.gui.TextFieldDropdown.isolated_eval( str );
+            end
           catch err
             warning( 'Failed to evaluate expression:\n\n %s\n', err.message );
             
@@ -174,8 +196,13 @@ classdef TextFieldDropdown < handle
           end
           
           if ( ~obj.is_editable_type(value) )
-            warning( ['Could not update "%s", because inputted value of class "%s"' ...
+            warning( ['Could not update "%s", because the inputted value of class "%s"' ...
               , ' is not editable.'], targ, class(value) );
+            
+            value = previous_value;
+          elseif ( obj.retain_original_type && ~strcmp(class(value), previous_class) )
+            warning( ['Could not update field "%s", because the inputted value of class "%s"' ...
+              , ' is different from its original class "%s".'], targ, class(value), previous_class );
             
             value = previous_value;
           end
@@ -232,7 +259,11 @@ classdef TextFieldDropdown < handle
       elseif ( isnumeric(v) )
         func = @(x) mat2str(x, 'class');
       elseif ( islogical(v) )
-        func = @(x) char(logical(x));
+        if ( obj.convert_logical )
+          func = @shared_utils.gui.TextFieldDropdown.get_logical_str;
+        else
+          func = @(x) mat2str(x, 'class');
+        end
       else
         func = @char;
       end
@@ -257,6 +288,10 @@ classdef TextFieldDropdown < handle
   methods (Access = private, Static = true)
     function v = isolated_eval(str)
       v = eval( str );
+    end
+    
+    function s = get_logical_str(v)
+      if ( v ), s = 'true'; else, s = 'false'; end
     end
   end
   
