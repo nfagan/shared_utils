@@ -15,7 +15,9 @@ classdef LoopedMakeRunner < handle
     call_with_identifier = false;
     
     load_func = @shared_utils.io.fload;
+    save_func = @shared_utils.io.psave;
     get_identifier_func = @shared_utils.pipeline.LoopedMakeRunner.default_get_identifier_func;
+    get_filename_func = @shared_utils.pipeline.LoopedMakeRunner.noop;
     filter_files_func = @shared_utils.pipeline.LoopedMakeRunner.noop;
     find_files_func = @shared_utils.pipeline.LoopedMakeRunner.default_find_files_func;
     get_directory_name_func = @shared_utils.pipeline.LoopedMakeRunner.get_directory_name;
@@ -116,6 +118,18 @@ classdef LoopedMakeRunner < handle
       obj.(func) = val;
     end
     
+    function set.save_func(obj, val)
+      func = 'save_func';
+      validateattributes( val, {'function_handle'}, {}, func, func );
+      obj.(func) = val;
+    end
+    
+    function set.get_filename_func(obj, val)
+      func = 'get_filename_func';
+      validateattributes( val, {'function_handle'}, {}, func, func );
+      obj.(func) = val;
+    end
+    
     function set.find_files_func(obj, val)
       func = 'find_files_func';
       validateattributes( val, {'function_handle'}, {}, func, func );
@@ -126,6 +140,12 @@ classdef LoopedMakeRunner < handle
       func = 'is_parallel';
       validateattributes( val, {'logical'}, {'scalar'}, func, func );
       obj.is_parallel = val;
+    end
+    
+    function set.call_with_identifier(obj, val)
+      func = 'call_with_identifier';
+      validateattributes( val, {'logical'}, {'scalar'}, func, func );
+      obj.call_with_identifier = val;
     end
     
     function set.overwrite(obj, val)
@@ -206,7 +226,7 @@ classdef LoopedMakeRunner < handle
       
       res.file_identifier = identifier;
       
-      output_filename = obj.get_output_file_parts( identifier );
+      output_filename = obj.get_output_file_parts( obj.get_filename_func(identifier) );
       
       res.output_filename = output_filename;
       
@@ -241,7 +261,7 @@ classdef LoopedMakeRunner < handle
       
         if ( obj.save )
           shared_utils.io.require_dir( obj.output_directory );
-          shared_utils.io.psave( output_filename, out_file );
+          obj.save_func( output_filename, out_file );
           
           res.saved = true;
         end
