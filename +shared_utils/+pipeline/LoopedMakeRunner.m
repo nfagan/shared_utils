@@ -77,7 +77,7 @@ classdef LoopedMakeRunner < handle
         return
       end
       
-      if ( obj.is_parallel )
+      if ( obj.use_parallel() )
         res = obj.parfor_runner(input_filenames, func, varargin);
       else
         res = obj.for_runner(input_filenames, func, varargin);
@@ -164,6 +164,10 @@ classdef LoopedMakeRunner < handle
   end
   
   methods (Access = private)
+    
+    function tf = use_parallel(obj)
+      tf = obj.is_parallel && ~isempty( gcp('nocreate') );
+    end
     
     function full_filename = get_output_file_parts(obj, identifier)
       full_filename = fullfile( obj.output_directory, identifier );
