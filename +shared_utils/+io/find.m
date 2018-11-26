@@ -8,27 +8,31 @@ function out = find(path, ext, rec)
 %     files = find( cd, '.txt', true ); recursively searches subfolders of
 %     the current directory, returning all matching files.
 %
-%     directories = find( cd, 'folders' ... ); absolute directory paths.
+%     directories = find( cd, 'folders' ... ); returns absolute paths to
+%     directories.
 %
-%     files = find( DIRS, ... ) where DIRS is a cell array of strings,
+%     files = find( DIRS, ... ) where `DIRS` is a cell array of strings,
 %     works as above, for each directory in `DIRS`, concatenating the
 %     results into a single array `files`.
 %
+%     files = find( DIRS, EXTENSIONS ) where `EXTENSIONS` is a cell array 
+%     of strings, works as above, for each extension in `EXTENSIONS`.
+%
 %     IN:
-%       - `path` (char)
-%       - `ext` (char)
+%       - `path` (cell array of strings, char)
+%       - `ext` (cell array of strings, char)
 %       - `rec` (logical) |OPTIONAL| -- Recursive search. Default is false.
+%     OUT:
+%       - `out` (cell array of strings)
 
 if ( nargin < 3 ), rec = false; end
 
 import shared_utils.assertions.*;
 
-path = shared_utils.cell.ensure_cell( path );
-ext = shared_utils.cell.ensure_cell( ext );
+path = cellstr( path );
+ext = cellstr( ext );
 
-assert__is_cellstr_or_char( path, 'path' );
-assert__is_cellstr_or_char( ext, 'extension' );
-assert__isa( rec, 'logical' );
+validateattributes( rec, {'logical'}, {'scalar'}, mfilename, 'recursive' );
 
 out = {};
 
