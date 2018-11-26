@@ -4,6 +4,7 @@ classdef TextFieldDropdown < handle
     parent;
     convert_logical;
     retain_original_type;
+    orientation;
   end
   
   properties (SetAccess = public, GetAccess = private)
@@ -30,6 +31,7 @@ classdef TextFieldDropdown < handle
       obj.parent = [];
       obj.convert_logical = true;
       obj.retain_original_type = true;
+      obj.orientation = 'vertical';
       
       obj.on_change = @(old_data, new_data, target) 1;
       
@@ -83,6 +85,12 @@ classdef TextFieldDropdown < handle
       obj.(prop) = val;
     end
     
+    function set.orientation(obj, val)
+      prop_name = 'orientation';
+      v = validatestring( val, {'vertical', 'horizontal'}, prop_name, prop_name );
+      obj.(prop_name) = v;
+    end
+    
     function set.convert_logical(obj, val)
       prop = 'convert_logical';
       validateattributes( val, {'logical', 'double'}, {'scalar'}, prop, prop );
@@ -99,10 +107,16 @@ classdef TextFieldDropdown < handle
   methods (Access = public)
     function Update(obj)
       
-      w = 0.5;
-      l = 1;
+      if ( strcmp(obj.orientation, 'horizontal') )
+        w = 0.5;
+        l = 1;
+      else
+        w = 1;
+        l = 0.5;
+      end
+      
       x = 0;
-      y = 0;
+      y = 0;      
 
       position = [ x, y, w, l ];
 
@@ -155,7 +169,11 @@ classdef TextFieldDropdown < handle
         );
       end
 
-      position = [ x+w, y, w, l ];
+      if ( strcmp(obj.orientation, 'horizontal') )
+        position = [ x+w, y, w, l ];
+      else
+        position = [ x, y+l, w, l ];
+      end
       
       obj.conditional_delete_resource( obj.dropdown_panel );
       

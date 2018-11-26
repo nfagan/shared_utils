@@ -31,12 +31,13 @@ function v = get_blocked_condition_indices(n_blocks, block_size, n_conditions)
 %       - `v` (double)
 
 classes = { 'double', 'single' };
-attrs = { 'scalar', 'positive', 'real', 'integer' };
+attrs = { 'scalar', 'real', 'integer' };
+pos_attrs = [ attrs, 'positive' ];
 
 try
   validateattributes( n_blocks, classes, attrs, mfilename, 'n_blocks' );
-  validateattributes( block_size, classes, attrs, mfilename, 'block_size' );
-  validateattributes( n_conditions, classes, attrs, mfilename, 'n_conditions' );
+  validateattributes( block_size, classes, pos_attrs, mfilename, 'block_size' );
+  validateattributes( n_conditions, classes, pos_attrs, mfilename, 'n_conditions' );
 
   assert( block_size >= n_conditions && mod(block_size, n_conditions) == 0 ...
     , 'Block size must be an integer multiple of the number of conditions.' );
