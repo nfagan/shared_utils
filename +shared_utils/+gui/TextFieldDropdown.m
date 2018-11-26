@@ -31,7 +31,7 @@ classdef TextFieldDropdown < handle
       obj.parent = [];
       obj.convert_logical = true;
       obj.retain_original_type = true;
-      obj.orientation = 'vertical';
+      obj.orientation = 'horizontal';
       
       obj.on_change = @(old_data, new_data, target) 1;
       
