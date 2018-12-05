@@ -18,6 +18,8 @@ function out = find(path, ext, rec)
 %     files = find( DIRS, EXTENSIONS ) where `EXTENSIONS` is a cell array 
 %     of strings, works as above, for each extension in `EXTENSIONS`.
 %
+%     See also shared_utils.io.dirnames, shared_utils.io.filenames
+%
 %     IN:
 %       - `path` (cell array of strings, char)
 %       - `ext` (cell array of strings, char)

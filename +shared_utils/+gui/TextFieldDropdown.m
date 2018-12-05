@@ -121,7 +121,7 @@ classdef TextFieldDropdown < handle
       position = [ x, y, w, l ];
 
       dat = obj.data;
-      strs = fieldnames( dat );
+      strs = sort( fieldnames(dat) );
 
       if ( numel(strs) == 0 )
         return;

@@ -1,26 +1,206 @@
 classdef LoopedMakeRunner < handle
   
   properties (Access = public)
+    
+    %   LOG_LEVEL
+    %
+    %     log_level controls what output is logged to the console.
+    %     Options are 'info', 'warn', 'progress', or 'off'. 'info' logs 
+    %     everything; 'warn' logs warnings, only; 'progress' logs progress, 
+    %     only; 'off' suppresses output entirely.
     log_level = 'info';
+    
+    %   FUNC_NAME
+    %
+    %     func_name is used when printing the progress of the looped
+    %     runner, providing a more descriptive indication of what's
+    %     processing.
     func_name = '';
     
+    %   FILES_AGGREGATE_TYPE
+    %
+    %     files_aggregate_type gives the class of the aggregate file
+    %     structure passed as the first argument to the LoopedMakeRunner's
+    %     main function. Options are 'struct' (default) or 'containers.Map'.
+    %
+    %     See also shared_utils.pipeline.LoopedMakeRunner.run,
+    %       shared_utils.general.get
     files_aggregate_type = 'struct';
     
+    %   INPUT_DIRECTORIES
+    %
+    %     input_directories is a cell array of strings or a char vector
+    %     specifying full path(s) to the directory(ies) from which files 
+    %     will be loaded.
+    %
+    %     See also shared_utils.pipeline.LoopedMakeRunner.output_directory
     input_directories = {};
+    
+    %   OUTPUT_DIRECTORY
+    %
+    %     output_directory is a char vector specifying the full path to the
+    %     directory in which the single output from the LoopedMakeRunner's
+    %     main function will be saved.
+    %
+    %     See also shared_utils.pipeline.LoopedMakeRunner.run
     output_directory = '';
     
+    %   IS_PARALLEL
+    %
+    %     is_parallel indicates whether to attempt to run the main function
+    %     in parallel. The function will only run in parallel if a valid
+    %     parpool instance already exists. Default is true.
     is_parallel = true;
+    
+    %   OVERWRITE
+    %
+    %     overwrite indicates whether to allow existing files in
+    %     `output_directory` to be overwritten. Default is false.
+    %
+    %     See also shared_utils.pipeline.LoopedMakeRunner.output_directory
     overwrite = false;
+    
+    %   SAVE
+    %
+    %     save indicates whether to attempt to save the output of the main
+    %     function. Default is true.
     save = true;
+    
+    %   CALL_WITH_IDENTIFIER
+    %
+    %     call_with_identifier indicates whether to call the main function
+    %     with an additional argument 'identifier', the char vector 
+    %     identifier associated with the current file aggregate. Default is
+    %     false.
     call_with_identifier = false;
     
+    %   KEEP_OUTPUT
+    %
+    %     keep_output indicates whether to store the output of each call to
+    %     the LoopedMakeRunner's main function in the output of `run`.
+    %     Default is false.
+    %
+    %     See also shared_utils.pipeline.LoopedMakeRunner.run
+    keep_output = false;
+    
+    %   LOAD_FUNC
+    %
+    %     load_func is a handle to a function that receives a char vector
+    %     filename and returns a single output (usually a struct), and is
+    %     the function used to load files from `input_directories`. Default
+    %     is shared_utils.io.fload.
+    %
+    %     See also shared_utils.io.fload
     load_func = @shared_utils.io.fload;
+    
+    %   SAVE_FUNC
+    %
+    %     save_func is a handle to a function that receives a char vector
+    %     filename and the to-be-saved data, and returns no outputs. It is
+    %     the function used to save files into `output_directory`. Default
+    %     is shared_utils.io.psave.
+    %
+    %     See also shared_utils.io.psave
     save_func = @shared_utils.io.psave;
+    
+    %   GET_IDENTIFIER_FUNC
+    %
+    %     get_identifier_func is a handle to a function that receives the
+    %     contents of a file (as loaded with `load_func`) and the char 
+    %     vector absolute path to that file, and returns a char vector
+    %     identifier for that file. The identifier is generally (but need
+    %     not be) the same as the filename. Default is a function that
+    %     attempts to access an 'identifier' field in the loaded file. This
+    %     will generate an error if the loaded file is not a struct or
+    %     does not have an 'identifier' field; in this case you must
+    %     specify this function manually.
+    %
+    %     See also shared_utils.pipeline.LoopedMakeRunner.get_filename_func
     get_identifier_func = @shared_utils.pipeline.LoopedMakeRunner.default_get_identifier_func;
+    
+    %   GET_FILENAME_FUNC
+    %
+    %     get_filename_func is a handle to a function that receives a char
+    %     vector file identifier and returns a char vector filename. The
+    %     filename is used to save the output of the main function in
+    %     `output_directory`. Default is a function that simply returns the
+    %     identifier unmodified.
+    %
+    %     See also shared_utils.pipeline.LoopedMakeRunner.get_identifier_func
     get_filename_func = @shared_utils.pipeline.LoopedMakeRunner.noop;
+    
+    %   FILTER_FILES_FUNC
+    %
+    %     filter_files_func is a handle to a function that receives a cell
+    %     array of absolute file paths and returns a cell array that is the
+    %     subset (or complete set) of those file paths that meet some 
+    %     condition (e.g., contain a certain string). Only the resulting 
+    %     file paths will be used when loading files. Default is a function 
+    %     that simply returns the result of `find_files_func` unmodified.
+    %
+    %     See also shared_utils.pipeline.LoopedMakeRunner.find_files_func
     filter_files_func = @shared_utils.pipeline.LoopedMakeRunner.noop;
+    
+    %   FIND_FILES_FUNC
+    %
+    %     find_files_func is a handle to a function that receives a single 
+    %     char vector absolute directory path and returns a cell array of 
+    %     absolute paths to files in that directory. Note that this 
+    %     function will be called only once, and with the first entry in 
+    %     `input_directories`. Default is a function that returns a cell
+    %     array of absolute paths to .mat files in a given directory.
+    %
+    %     See also shared_utils.pipeline.LoopedMakeRunner.filter_files_func,
+    %       shared_utils.io.find
     find_files_func = @shared_utils.pipeline.LoopedMakeRunner.default_find_files_func;
+    
+    %   GET_DIRECTORY_NAME_FUNC
+    %
+    %     get_directory_name_func is a handle to a function that receives a
+    %     char vector absolute directory path and returns a char vector
+    %     directory name. For each `input_directory`, the result of this
+    %     function gives the name of the corresponding entry into the 
+    %     files aggregate passed as the first argument to the main function. 
+    %     Default is a function that obtains a folder name from a directory 
+    %     path.
+    %
+    %     For example, if `input_directories` contains two entries:
+    %     { '/path/to/folder1', '/path/to/folder2' }
+    %
+    %     then, by default, the main function will be called with a struct
+    %     whose fields are 'folder1' and 'folder2'.
+    %
+    %     See also shared_utils.pipeline.LoopedMakeRunner.run     
     get_directory_name_func = @shared_utils.pipeline.LoopedMakeRunner.get_directory_name;
+
+    %   MAIN_ERROR_HANDLER
+    %
+    %     main_error_handler controls how errors thrown by the main
+    %     function (the function passed as an argument to `run`) are
+    %     handled. This property can be one of 'warn', 'error', or a handle 
+    %     to a function that accepts an MException as input and returns no 
+    %     outputs. If the value is 'warn', caught errors are conditionally 
+    %     printed as warnings to the console, depending on the current 
+    %     `log_level`. If the value is 'error', caught errors are rethrown, 
+    %     stopping execution.
+    %
+    %     See also shared_utils.pipeline.LoopedMakeRunner.io_error_handler,
+    %       shared_utils.pipeline.LoopedMakeRunner.log_level
+    main_error_handler = 'warn';
+    
+    %   IO_ERROR_HANDLER
+    %
+    %     io_error_handler controls how errors thrown in the process of
+    %     loading or saving files are handled. This property can be one of 
+    %     'warn', 'error', or a handle to a function that accepts an 
+    %     MException as input and returns no outputs. If the value is 
+    %     'warn', caught errors are conditionally printed as warnings to 
+    %     the console, depending on the current `log_level`. If the value 
+    %     is 'error', caught errors are rethrown, stopping execution.
+    %
+    %     See also shared_utils.pipeline.LoopedMakeRunner.main_error_handler,
+    %       shared_utils.pipeline.LoopedMakeRunner.log_level    
+    io_error_handler = 'warn';
   end
   
   properties (Access = private)
@@ -30,11 +210,53 @@ classdef LoopedMakeRunner < handle
   
   properties (Access = private, Constant = true)
     log_levels = { 'info', 'warn', 'progress', 'off' };
+    error_handler_str_types = { 'warn', 'error' };
     files_aggregate_types = { 'struct', 'containers.Map' };
   end
   
   methods    
     function obj = LoopedMakeRunner(varargin)
+      
+      %   LOOPEDMAKERUNNER -- Create LoopedMakeRunner instance.
+      %
+      %     LoopedMakeRunner exposes an interface for loading, processing,
+      %     and saving files, treating the file system like a rudimentary
+      %     database.
+      %
+      %     This class is best suited to a data structure in which ordinary
+      %     directories function as fields of a table, with filenames
+      %     therein as string keys / identifiers that are consistent across
+      %     tables.
+      %
+      %     For example, the following folder structure is a good candidate
+      %     for making use of LoopedMakeRunner:
+      %
+      %     data/
+      %       meta/
+      %         run1_session1.mat
+      %         run2_session1.mat
+      %       performance/
+      %         run1_session1.mat
+      %         run2_session1.mat
+      %
+      %     In this example, the 'meta' and 'performance' directories 
+      %     contain meta-data and subject performance-data, respectively, 
+      %     for two runs of some experiment. In both directories, filenames
+      %     are unique identifiers that refer to a given run. LoopedMakeRunner 
+      %     can be used to call a function that operates on files 
+      %     associated with each identifier (serially or in parallel), 
+      %     and to potentially produce a new "table" as an output. 
+      %
+      %     Each identifier conceptually refers to a "unit" that can be 
+      %     (must be) processed in isolation, without using data from any 
+      %     other "unit." If, for example, your data are structured such 
+      %     that 'run1_session1.mat' and 'run2_session1.mat' need to 
+      %     be loaded together, then LoopedMakeRunner may not be the
+      %     correct tool.
+      %
+      %     See also shared_utils.pipeline.LoopedMakeRunner.run,
+      %       shared_utils.io.fload, shared_utils.io.psave
+      
       try
         shared_utils.general.parseobject( obj, varargin );
       catch err
@@ -42,14 +264,50 @@ classdef LoopedMakeRunner < handle
       end
     end
     
+    function convert_to_non_saving_with_output(obj)
+      
+      %   CONVERT_TO_NON_SAVING_WITH_OUTPUT
+      %
+      %     Reconfigure instantiated object to operate without saving
+      %     output of main function.
+      %
+      %     See also shared_utils.pipeline.LoopedMakeRunner.make_non_saving_with_output
+      
+      obj.save = false;
+      obj.keep_output = true;
+      obj.files_aggregate_type = 'containers.Map';
+    end
+    
+    function set_error_handler(obj, val)
+      
+      %   SET_ERROR_HANDLER -- Set error handling behavior.
+      %
+      %     This function sets the error handling behavior for both file
+      %     loading/saving and the main routine.
+      %
+      %     IN:
+      %       - `val` (char, function_handle)
+      %
+      %     See also shared_utils.pipeline.LoopedMakeRunner.main_error_handler,
+      %       shared_utils.pipeline.LoopedMakeRunner.io_error_handler
+      
+      obj.main_error_handler = val;
+      obj.io_error_handler = val;
+    end
+    
     function res = run(obj, func, varargin)
       
-      %   RUN -- Run make* function.
+      %   RUN -- Run main function.
       %
       %     res = obj.run( func ); calls the function `func` with input
-      %     `files`, where `files` is a struct with a field for each
-      %     directory in `obj.input_directories`, separately for each
-      %     unique filename obtained from `obj.find_files_func`.
+      %     `files`, where `files` is a struct or containers.Map object
+      %     with an entry for each directory in `obj.input_directories`, 
+      %     separately for each unique filename obtained from 
+      %     `obj.find_files_func`.
+      %
+      %     res = obj.run( func, arg1, arg2, ... argN ) calls `func` with
+      %     `files` as a first input, as above, but also with arguments
+      %     `arg1`, `arg2`, ... `argN`.
       %     
       %     Output `res` is an array of struct indicating the status of
       %     processing each unique file. `res` has fields 'success', 
@@ -78,9 +336,25 @@ classdef LoopedMakeRunner < handle
       end
       
       if ( obj.use_parallel() )
-        res = obj.parfor_runner(input_filenames, func, varargin);
+        res = obj.parfor_runner( input_filenames, func, varargin );
       else
-        res = obj.for_runner(input_filenames, func, varargin);
+        res = obj.for_runner( input_filenames, func, varargin );
+      end
+    end
+    
+    function set.main_error_handler(obj, val)      
+      try
+        obj.main_error_handler = obj.try_get_error_handler( val );
+      catch err
+        throw( err );
+      end
+    end
+    
+    function set.io_error_handler(obj, val)
+      try
+        obj.io_error_handler = obj.try_get_error_handler( val );
+      catch err
+        throw( err );
       end
     end
     
@@ -148,6 +422,12 @@ classdef LoopedMakeRunner < handle
       obj.call_with_identifier = val;
     end
     
+    function set.keep_output(obj, val)
+      func = 'keep_output';
+      validateattributes( val, {'logical'}, {'scalar'}, func, func );
+      obj.keep_output = val;
+    end
+    
     function set.overwrite(obj, val)
       func = 'overwrite';
       validateattributes( val, {'logical'}, {'scalar'}, func, func );
@@ -205,9 +485,20 @@ classdef LoopedMakeRunner < handle
       end
     end
     
+    function v = try_get_error_handler(obj, val)
+      if ( ischar(val) )
+        v = validatestring( val, obj.error_handler_str_types );
+      else
+        validateattributes( val, {'function_handle'}, {} );
+        assert( nargin(val) == 1 ...
+          , 'An error handler function must accept a single argument.' );
+        v = val;
+      end
+    end
+    
     function res = main_wrapper(obj, filename, func, func_inputs)
       
-      %   MAIN_WRAPPER -- Call make* function for one file identifier.
+      %   MAIN_WRAPPER -- Call main function for one file identifier.
       %
       %     This is the main routine.
       
@@ -222,7 +513,7 @@ classdef LoopedMakeRunner < handle
         [primary_file, identifier] = obj.get_primary_file( filename );
         
       catch err
-        obj.log_message( err.message, 'warn' );
+        obj.handle_error( err, 'io_error_handler' );
         
         res = obj.assign_error_struct( res, err, identifier );
         return
@@ -245,7 +536,7 @@ classdef LoopedMakeRunner < handle
         % additional input directories (beyond the first).
         files = obj.get_files( primary_file, identifier );
       catch err
-        obj.log_message( err.message, 'warn' );
+        obj.handle_error( err, 'io_error_handler' );
         
         res = obj.assign_error_struct( res, err, identifier );
         return
@@ -269,11 +560,35 @@ classdef LoopedMakeRunner < handle
           
           res.saved = true;
         end
-      catch err
-        obj.log_message( err.message, 'warn' );
+        
+        % conditionally return the output of `func`.
+        if ( obj.keep_output )
+          res.output = out_file;
+        end
+      catch err        
+        obj.handle_error( err, 'main_error_handler' );
         
         res = obj.assign_error_struct( res, err, identifier );
       end
+    end
+    
+    function handle_error(obj, err, kind)
+      
+      func_or_kind = obj.(kind);
+      
+      if ( ischar(func_or_kind) )
+        switch ( func_or_kind )
+          case 'error'
+            throwAsCaller( err );
+          case 'warn'
+            obj.log_message( err.message, 'warn' );
+          otherwise
+            error( 'Unhandled error kind: "%s".', func_or_kind );
+        end
+      else
+        func_or_kind( err );
+      end
+      
     end
     
     function outs = parfor_runner(obj, filenames, func, func_inputs)
@@ -391,6 +706,19 @@ classdef LoopedMakeRunner < handle
       n = parts{end};
     end
     
+    function obj = make_non_saving_with_output()
+      
+      %   MAKE_NON_SAVING_WITH_OUTPUT
+      %
+      %     Create LoopedMakeRunner instance configured to store the output
+      %     of all calls to its main function, but not save that output.
+      %
+      %     See also shared_utils.pipeline.LoopedMakeRunner
+      
+      obj = shared_utils.pipeline.LoopedMakeRunner;
+      obj.convert_to_non_saving_with_output();
+    end
+    
   end
   
   methods (Access = private, Static = true)
@@ -412,6 +740,7 @@ classdef LoopedMakeRunner < handle
       o.file_identifier = '';
       o.primary_input_filename = primary_input_filename;
       o.output_filename = '';
+      o.output = [];
       o.saved = false;
     end
   end
