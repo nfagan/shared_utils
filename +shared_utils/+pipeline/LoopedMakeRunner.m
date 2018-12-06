@@ -581,7 +581,7 @@ classdef LoopedMakeRunner < handle
           case 'error'
             throwAsCaller( err );
           case 'warn'
-            obj.log_message( err.message, 'warn' );
+            obj.log_message( sprintf('\n%s: %s', kind, err.message), 'warn' );
           otherwise
             error( 'Unhandled error kind: "%s".', func_or_kind );
         end
