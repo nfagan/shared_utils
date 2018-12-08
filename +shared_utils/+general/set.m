@@ -7,7 +7,7 @@ function obj = set(obj, str, val)
 %     provides a standardized interface for setting the contents of a 
 %     containers.Map, struct, or Matlab object.
 %
-%     See also shared_utils.general.get
+%     See also shared_utils.general.get, shared_utils.general.keys
 %
 %     IN:
 %       - `obj` (object, struct, containers.Map)

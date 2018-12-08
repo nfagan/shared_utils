@@ -4,7 +4,9 @@ function idx = get_loop_indices(N)
 %
 %     indices = ... get_loop_indices( N ); returns a subset of the array
 %     [ 1:N ] divided maximally evenly between the current number of
-%     workers. This function can be used to generate mutually exclusive
+%     workers. 
+%
+%     This function can be used to generate mutually exclusive
 %     loop indices in an spmd block.
 %
 %     EX //

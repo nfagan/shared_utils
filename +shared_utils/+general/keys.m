@@ -2,6 +2,8 @@ function k = keys(obj)
 
 %   KEYS -- Get keys of object, struct, or containers.Map object.
 %
+%     See also shared_utils.general.is_key, shared_utils.general.set
+%
 %     IN:
 %       - `obj` (object, struct, containers.Map)
 %     OUT:

@@ -454,7 +454,7 @@ classdef LoopedMakeRunner < handle
     end
     
     function should_skip = conditional_skip_file(obj, output_filename, identifier)
-      should_skip = shared_utils.io.fexists( output_filename ) && ~obj.overwrite;
+      should_skip = obj.save && shared_utils.io.fexists( output_filename ) && ~obj.overwrite;
       
       if ( should_skip )
         msg = sprintf( 'Skipping "%s" because it already exists.', identifier );
@@ -595,11 +595,13 @@ classdef LoopedMakeRunner < handle
       
       %   PARFOR_RUNNER -- Run `main_wrapper` in parallel for each file.
       
-      name = obj.func_name;
-      outs = cell( numel(filenames), 1 );
+      N = numel( filenames );
+      outs = cell( N, 1 );
+      ids = shared_utils.io.filenames( filenames );
+      longest_id_length = max( cellfun(@numel, ids) );
       
       parfor i = 1:numel(filenames)
-        obj.log_message( sprintf('%s: %d of %d', name, i, numel(filenames)), 'progress' );
+        obj.print_progress( ids{i}, i, N, longest_id_length );
         
         outs{i} = obj.main_wrapper( filenames{i}, func, func_inputs );
       end
@@ -611,11 +613,13 @@ classdef LoopedMakeRunner < handle
       
       %   FOR_RUNNER -- Run `main_wrapper` for each file, serially.
       
-      name = obj.func_name;
-      outs = cell( numel(filenames), 1 );
+      N = numel( filenames );
+      outs = cell( N, 1 );
+      ids = shared_utils.io.filenames( filenames );
+      longest_id_length = max( cellfun(@numel, ids) );
       
-      for i = 1:numel(filenames)
-        obj.log_message( sprintf('%s: %d of %d', name, i, numel(filenames)), 'progress' );
+      for i = 1:N
+        obj.print_progress( ids{i}, i, N, longest_id_length );
         
         outs{i} = obj.main_wrapper( filenames{i}, func, func_inputs );
       end
@@ -673,6 +677,21 @@ classdef LoopedMakeRunner < handle
       status.message = err.message;
       status.error_identifier = err.identifier;
       status.file_identifier = identifier;
+    end
+    
+    function print_progress(obj, id, iter, N, longest_id_length)
+      
+      n_spaces = longest_id_length - numel( id );
+      space_str = repmat( ' ', 1, n_spaces );
+      
+      if ( ~isempty(obj.func_name) )
+        str = sprintf( '%s: %s %s(%d of %d)', obj.func_name, id ...
+          , space_str, iter, N );
+      else
+        str = sprintf( '%s %s(%d of %d)', id, space_str, iter, N );
+      end
+      
+      obj.log_message( str, 'progress' );      
     end
     
     function log_message(obj, message, level)
