@@ -323,11 +323,16 @@ classdef LoopedMakeRunner < handle
       validateattributes( func, {'function_handle'}, {}, 'run', 'func' );
       
       obj.handle_input_directories();
+      obj.log_message( newline, 'info', false );
 
       try
         input_filenames = obj.get_input_filenames();
       catch err
-        throw( err );
+        obj.handle_error( err, 'io_error_handler' );
+        
+        res = obj.get_outputs_empty_inputs();
+        
+        return
       end
       
       if ( isempty(input_filenames) )
@@ -446,7 +451,12 @@ classdef LoopedMakeRunner < handle
   methods (Access = private)
     
     function tf = use_parallel(obj)
-      tf = obj.is_parallel && ~isempty( gcp('nocreate') );
+      try
+        tf = obj.is_parallel && ~isempty( gcp('nocreate') );
+      catch err
+        % Ignore missing parallel toolbox.
+        tf = false;
+      end
     end
     
     function full_filename = get_output_file_parts(obj, identifier)
@@ -457,8 +467,8 @@ classdef LoopedMakeRunner < handle
       should_skip = obj.save && shared_utils.io.fexists( output_filename ) && ~obj.overwrite;
       
       if ( should_skip )
-        msg = sprintf( 'Skipping "%s" because it already exists.', identifier );
-        obj.log_message( msg, 'info' );
+        % false to not print newline
+        obj.log_message( ' | Skipping because it already exists.', 'info', false );
       end
     end
     
@@ -694,7 +704,11 @@ classdef LoopedMakeRunner < handle
       obj.log_message( str, 'progress' );      
     end
     
-    function log_message(obj, message, level)
+    function log_message(obj, message, level, add_new_line)
+      
+      if ( nargin < 4 )
+        add_new_line = true;
+      end
       
       if ( strcmp(obj.log_level, 'off') )
         return
@@ -707,7 +721,11 @@ classdef LoopedMakeRunner < handle
       if ( strcmp(level, 'warn') )
         warning( message );
       else
-        fprintf( '\n %s', message );
+        if ( add_new_line )
+          fprintf( '\n %s', message );
+        else
+          fprintf( '%s', message );
+        end
       end
     end
   end
