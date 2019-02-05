@@ -201,11 +201,26 @@ classdef LoopedMakeRunner < handle
     %     See also shared_utils.pipeline.LoopedMakeRunner.main_error_handler,
     %       shared_utils.pipeline.LoopedMakeRunner.log_level    
     io_error_handler = 'warn';
+    
+    %   ENABLE_ESCAPE_LISTENER
+    %
+    %     enable_escape_listener is a logical scalar indicating whether to
+    %     listen for an escape key-press during the main processing loop.
+    %     If the escape key is pressed, the runner will abort processing
+    %     further files, and will return the processed results.
+    %
+    %     Key listening depends on Psychtoolbox; if Psychtoolbox is not
+    %     installed, enabling this feature has no effect. Aborting is also
+    %     not possible if the runner is running in parallel.
+    %
+    %     See also shared_utils.pipeline.LoopedMakeRunner
+    enable_escape_listener = false;
   end
   
   properties (Access = private)
     first_input_directory = '';
     remaining_input_directories = {};
+    failed_to_check_key_input = false;
   end
   
   properties (Access = private, Constant = true)
@@ -450,6 +465,24 @@ classdef LoopedMakeRunner < handle
   
   methods (Access = private)
     
+    function tf = check_should_escape(obj)
+      tf = false;
+      
+      if ( ~obj.enable_escape_listener || obj.is_parallel || obj.failed_to_check_key_input )
+        return
+      end
+      
+      try
+        [key_pressed, ~, key_code] = KbCheck();
+        
+        if ( key_pressed && key_code(KbName('escape')) )
+          tf = true;
+        end
+      catch err
+        obj.failed_to_check_key_input = true;
+      end
+    end
+    
     function tf = use_parallel(obj)
       try
         tf = obj.is_parallel && ~isempty( gcp('nocreate') );
@@ -468,7 +501,7 @@ classdef LoopedMakeRunner < handle
       
       if ( should_skip )
         % false to not print newline
-        obj.log_message( ' | Skipping because it already exists.', 'info', false );
+        obj.log_message( ' | Skipping; already exists.', 'info', false );
       end
     end
     
@@ -632,6 +665,10 @@ classdef LoopedMakeRunner < handle
         obj.print_progress( ids{i}, i, N, longest_id_length );
         
         outs{i} = obj.main_wrapper( filenames{i}, func, func_inputs );
+        
+        if ( check_should_escape(obj) )
+          break;
+        end
       end
       
       outs = vertcat( outs{:} );
@@ -758,7 +795,7 @@ classdef LoopedMakeRunner < handle
     
   end
   
-  methods (Access = private, Static = true)
+  methods (Access = private, Static = true)   
     function files = default_find_files_func(input_p)
       files = shared_utils.io.find( input_p, '.mat' );
     end
