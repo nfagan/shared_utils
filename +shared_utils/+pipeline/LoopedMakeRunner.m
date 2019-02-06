@@ -279,6 +279,67 @@ classdef LoopedMakeRunner < handle
       end
     end
     
+    function set_skip_existing_files(obj, output_directory, ext)
+      
+      %   SET_SKIP_EXISTING_FILES -- Configure the runner to skip files that
+      %     already exist in the output folder.
+      %
+      %     set_skip_existing_files( runner, output_directory ); configures
+      %     the `runner` to avoid processing mat-file identifiers that are 
+      %     already present in `output_directory`. If `output_directory` 
+      %     does not exist, this function has no effect.
+      %
+      %     set_skip_existing_files( runner ), with no additional inputs,
+      %     works as above, except that the output_directory is the value
+      %     of `obj.output_directory`.
+      %
+      %     set_skip_existing_files( ..., extension ) uses `extension` to
+      %     look for files in `output_directory`, instead of '.mat'.
+      %
+      %     See also shared_utils.pipeline.LoopedMakeRunner
+      
+      if ( nargin < 3 )
+        ext = '.mat';
+      end
+      
+      if ( nargin < 2 )
+        output_directory = '';
+        use_given_output_directory = false;
+      else
+        use_given_output_directory = true;
+      end
+      
+      filter_func = obj.filter_files_func;
+      obj.filter_files_func = @(x) skip_files_func(filter_func(x));
+      
+      function files = skip_files_func(files)
+        
+        if ( use_given_output_directory )
+          od = output_directory;
+        else
+          od = obj.output_directory;
+        end
+        
+        try
+          od = char( od );
+          
+          if ( ~shared_utils.io.dexists(od) )
+            return
+          end
+          
+          current_files = shared_utils.io.dirnames( od, ext );
+          
+          % First filter the files according to the current filter function. 
+          % Then, of the subset that remain, exclude those that contain any of 
+          % `current_files`.
+
+          files = shared_utils.io.filter_files( files, {}, current_files );
+        catch e
+          % Ignore errors.
+        end
+      end
+    end
+    
     function convert_to_non_saving_with_output(obj)
       
       %   CONVERT_TO_NON_SAVING_WITH_OUTPUT
@@ -461,6 +522,12 @@ classdef LoopedMakeRunner < handle
     function set.files_aggregate_type(obj, val)
       obj.files_aggregate_type = validatestring( val, obj.files_aggregate_types );
     end
+    
+    function set.enable_escape_listener(obj, val)
+      func = 'enable_escape_listener';
+      validateattributes( val, {'logical'}, {'scalar'}, func, func );
+      obj.enable_escape_listener = val;
+    end
   end
   
   methods (Access = private)
@@ -501,7 +568,7 @@ classdef LoopedMakeRunner < handle
       
       if ( should_skip )
         % false to not print newline
-        obj.log_message( ' | Skipping; already exists.', 'info', false );
+        obj.log_message( ' | Skipping: already exists.', 'info', false );
       end
     end
     
@@ -767,8 +834,7 @@ classdef LoopedMakeRunner < handle
     end
   end
   
-  methods (Access = public, Static = true)
-    
+  methods (Access = public, Static = true)    
     function n = get_directory_name(p)
       if ( ispc() )
         slash = '\';
