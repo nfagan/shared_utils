@@ -5,6 +5,7 @@ classdef TextFieldDropdown < handle
     convert_logical;
     retain_original_type;
     orientation;
+    non_editable;
   end
   
   properties (SetAccess = public, GetAccess = private)
@@ -32,6 +33,7 @@ classdef TextFieldDropdown < handle
       obj.convert_logical = true;
       obj.retain_original_type = true;
       obj.orientation = 'horizontal';
+      obj.non_editable = {};
       
       obj.on_change = @(old_data, new_data, target) 1;
       
@@ -57,6 +59,14 @@ classdef TextFieldDropdown < handle
       prop = 'on_change';
       validateattributes( val, {'function_handle'}, {}, prop, prop );
       obj.(prop) = val;
+    end
+    
+    function set.non_editable(obj, val)
+      try
+        obj.non_editable = cellstr( val );
+      catch err
+        error( 'non_editable fieldnames must be convertible to a cell array of strings.' );
+      end
     end
     
     function set_data(obj, val)
@@ -121,7 +131,7 @@ classdef TextFieldDropdown < handle
       position = [ x, y, w, l ];
 
       dat = obj.data;
-      strs = sort( fieldnames(dat) );
+      strs = setdiff( sort(fieldnames(dat)), obj.non_editable );
 
       if ( numel(strs) == 0 )
         return;
@@ -234,7 +244,11 @@ classdef TextFieldDropdown < handle
         new_data.(targ) = value;
         
         try
-          obj.on_change( old_data, new_data, targ );
+          if ( nargout(obj.on_change) < 1 )
+            obj.on_change( old_data, new_data, targ );
+          else
+            new_data = obj.on_change( old_data, new_data, targ );
+          end
         catch err
           warning( err.message );
         end

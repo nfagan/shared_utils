@@ -287,7 +287,8 @@ classdef LoopedMakeRunner < handle
       %     set_skip_existing_files( runner, output_directory ); configures
       %     the `runner` to avoid processing mat-file identifiers that are 
       %     already present in `output_directory`. If `output_directory` 
-      %     does not exist, this function has no effect.
+      %     does not exist, or is the empty string (''), this function has 
+      %     no effect.
       %
       %     set_skip_existing_files( runner ), with no additional inputs,
       %     works as above, except that the output_directory is the value
@@ -320,6 +321,10 @@ classdef LoopedMakeRunner < handle
           od = obj.output_directory;
         end
         
+        if ( isempty(od) )
+          return
+        end
+        
         try
           od = char( od );
           
@@ -329,10 +334,7 @@ classdef LoopedMakeRunner < handle
           
           current_files = shared_utils.io.dirnames( od, ext );
           
-          % First filter the files according to the current filter function. 
-          % Then, of the subset that remain, exclude those that contain any of 
-          % `current_files`.
-
+          % Ignore files containing any of `current_files`.
           files = shared_utils.io.filter_files( files, {}, current_files );
         catch e
           % Ignore errors.
