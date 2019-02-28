@@ -3,9 +3,10 @@ function ps = fullfiles(varargin)
 %   FULLFILES -- Build full filenames from combinations of parts.
 %
 %     p = fullfiles( A, B, ... ) where any of `A`, `B`, ... are cell
-%     arrays of strings, generates a cell array of full filenames in `p`.
-%     Each element of `p` is a filename drawn from one combination of
-%     elements in cell arrays `A`, `B`, plus any character vector inputs.
+%     arrays of strings, generates a cell array of absolute file paths in 
+%     `p`. Each element of `p` is an absolute file path drawn from one 
+%     combination of elements in cell arrays `A`, `B`, plus any character 
+%     vector inputs.
 %
 %     p = fullfiles( A, B, ... ) where `A`, `B`, ... are all character
 %     vectors, is the same as fullfile( A, B, ... ), except that output `p`

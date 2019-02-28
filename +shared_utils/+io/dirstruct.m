@@ -7,14 +7,6 @@
 
 function d = dirstruct(filepath,kind)
 
-% orig = cd;
-% 
-% try
-%     cd(filepath); cd(orig);
-% catch
-%     error('''%s'' is not a valid path',filepath);
-% end
-
 if ( exist(filepath, 'dir') ~= 7 )
   error('''%s'' is not a valid path',filepath);
 end
