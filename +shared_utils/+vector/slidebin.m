@@ -10,13 +10,6 @@ function b = slidebin(a, win, step, discard_uneven)
 %
 %     B = ... slidebin( ..., DISCARD_UNEVEN ) controls whether to discard
 %     the last bin if it is not of size `WIN`. Default is false.
-%
-%     IN:
-%       - `a` (/any/)
-%       - `win` (double)
-%       - `step` (double)
-%     OUT:
-%       - `b` (cell array)
 
 if ( nargin < 4 ), discard_uneven = false; end
 if ( nargin < 3 ), step = win; end
