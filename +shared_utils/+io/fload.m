@@ -10,11 +10,7 @@ function out = fload(fname, varname)
 %     assigns to the variable `out`. `VARNAME` must be a variable contained
 %     in the file.
 %
-%     IN:
-%       - `fname` (char) -- .mat file to load.
-%       - `varname` (char) |OPTIONAL|
-%     OUT:
-%       - `out` (/any/) -- Loaded data.
+%     See also shared_utils.io.fexists, shared_utils.io.find
 
 import shared_utils.assertions.*;
 

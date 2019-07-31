@@ -19,13 +19,6 @@ function out = find(path, ext, rec)
 %     of strings, works as above, for each extension in `EXTENSIONS`.
 %
 %     See also shared_utils.io.dirnames, shared_utils.io.filenames
-%
-%     IN:
-%       - `path` (cell array of strings, char)
-%       - `ext` (cell array of strings, char)
-%       - `rec` (logical) |OPTIONAL| -- Recursive search. Default is false.
-%     OUT:
-%       - `out` (cell array of strings)
 
 if ( nargin < 3 ), rec = false; end
 

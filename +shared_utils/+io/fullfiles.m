@@ -18,11 +18,6 @@ function ps = fullfiles(varargin)
 %     p2 = shared_utils.io.fullfiles( 'a', {'b', 'c'}, {'d', 'e'} )
 %
 %     See also fullfile
-%
-%     IN:
-%       - `varargin` (cell array of strings, char)
-%     OUT:
-%       - `ps` (cell array of strings)
 
 narginchk( 1, Inf );
 

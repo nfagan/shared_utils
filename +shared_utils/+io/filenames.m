@@ -9,12 +9,6 @@ function fs = filenames(p, include_ext)
 %     of `fs`.
 %
 %     See also fileparts
-%
-%     IN:
-%       - `p` (cell array of strings, char)
-%       - `include_ext` (logical) |OPTIONAL|
-%     OUT:
-%       - `fs` (cell array of strings, char)
 
 if ( nargin < 2 ), include_ext = false; end
 
