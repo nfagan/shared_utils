@@ -8,13 +8,6 @@ function obj = set(obj, str, val)
 %     containers.Map, struct, or Matlab object.
 %
 %     See also shared_utils.general.get, shared_utils.general.keys
-%
-%     IN:
-%       - `obj` (object, struct, containers.Map)
-%       - `str` (char)
-%       - `val` (/any/)
-%     OUT:
-%       - `obj` (object, struct, containers.Map)
 
 if ( isa(obj, 'containers.Map') )
   obj(str) = val;

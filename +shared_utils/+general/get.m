@@ -8,12 +8,6 @@ function v = get(obj, str)
 %     struct, or Matlab object.
 %
 %     See also shared_utils.general.set
-%
-%     IN:
-%       - `obj` (obj, struct, containers.Map)
-%       - `str` (char)
-%     OUT:
-%       - `v` (/any/)
 
 if ( isa(obj, 'containers.Map') )
   v = obj(str);
