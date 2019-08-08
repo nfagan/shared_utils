@@ -363,9 +363,6 @@ classdef LoopedMakeRunner < handle
       %     This function sets the error handling behavior for both file
       %     loading/saving and the main routine.
       %
-      %     IN:
-      %       - `val` (char, function_handle)
-      %
       %     See also shared_utils.pipeline.LoopedMakeRunner.main_error_handler,
       %       shared_utils.pipeline.LoopedMakeRunner.io_error_handler
       
@@ -392,11 +389,7 @@ classdef LoopedMakeRunner < handle
       %     'message', 'error_identifier', 'file_identifier',
       %     'primary_input_filename', 'output_filename', and 'saved'.
       %
-      %     IN:
-      %       - `func` (function_handle)
-      %       - `varargin` (/any/)
-      %     OUT:
-      %       - `res` (struct)
+      %     See also shared_utils.pipeline.LoopedMakeRunner
       
       validateattributes( func, {'function_handle'}, {}, 'run', 'func' );
       
