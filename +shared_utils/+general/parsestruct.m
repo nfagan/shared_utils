@@ -3,7 +3,7 @@ function params = parsestruct(params, args)
 %   PARSESTRUCT -- Assign variable inputs to struct.
 %
 %     params = ... parsestruct( S, ARGS ) where ARGS is a cell array of
-%     'NAME', VALUE pairs assigns to `VALUE1` to field `NAME1` of struct 
+%     'NAME', VALUE pairs assigns `VALUE1` to field `NAME1` of struct 
 %     `S`, and so on for any additional number of ('name', value) pair 
 %     inputs. Each 'name' must be a present fieldname of `S`.
 %
@@ -26,12 +26,6 @@ function params = parsestruct(params, args)
 %     s1 = shared_utils.general.parsestruct( s, {'hello', 11} );
 %     s2 = shared_utils.general.parsestruct( s, {struct('hello', 11)} );
 %     s3 = shared_utils.general.parsestruct( s, {{'hello', 11}, struct('hi', 11)} );
-%
-%     IN:
-%       - `params` (struct)
-%       - `args` (cell)
-%     OUT:
-%       - `params` (struct)
 
 validateattributes( params, {'struct'}, {'scalar'}, 'parsestruct', 'params' );
 validateattributes( args, {'cell'}, {}, 'parsestruct', 'args' );

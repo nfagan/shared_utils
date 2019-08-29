@@ -11,12 +11,6 @@ function [starts, durs] = find_islands(vec)
 %     The indices in `inds` will be linear with respect to the input.
 %
 %     https://stackoverflow.com/questions/3274043/finding-islands-of-zeros-in-a-sequence
-%
-%     IN:
-%       - `vec` (logical)
-%     OUT:
-%       - `inds` (double) -- Starts of sequences of true values.
-%       - `l` (double) -- Length or size of each sequence.
 
 tsig = vec(:)';
 dsig = diff( [0 tsig 0] );

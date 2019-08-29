@@ -72,7 +72,21 @@ classdef LoopedMakeRunner < handle
     %     with an additional argument 'identifier', the char vector 
     %     identifier associated with the current file aggregate. Default is
     %     false.
+    %
+    %     See also
+    %       shared_utils.pipeline.LoopedMakeRunner.call_with_filepath
     call_with_identifier = false;
+    
+    %   CALL_WITH_FILEPATH
+    %
+    %     call_with_filepath indicates whether to call the main function
+    %     with an additional argument 'filepath', the char vector absolute
+    %     path to the primary loaded file; i.e., the file associated with
+    %     the first directory in `input_directories`. Default is false.
+    %
+    %     See also
+    %       shared_utils.pipeline.LoopedMakeRunner.call_with_identifier
+    call_with_filepath = false;
     
     %   KEEP_OUTPUT
     %
@@ -498,6 +512,12 @@ classdef LoopedMakeRunner < handle
       obj.call_with_identifier = val;
     end
     
+    function set.call_with_filepath(obj, val)
+      func = 'call_with_filepath';
+      validateattributes( val, {'logical'}, {'scalar'}, func, func );
+      obj.call_with_filepath = val;
+    end
+    
     function set.keep_output(obj, val)
       func = 'keep_output';
       validateattributes( val, {'logical'}, {'scalar'}, func, func );
@@ -653,11 +673,17 @@ classdef LoopedMakeRunner < handle
         % the directory given by `obj.output_directory`, depending on the
         % state of `obj.overwrite` and `obj.save`.
         
+        conditional_inputs = {};
+        
         if ( obj.call_with_identifier )
-          out_file = func( files, identifier, func_inputs{:} );
-        else
-          out_file = func( files, func_inputs{:} );
+          conditional_inputs{end+1} = identifier;
         end
+        
+        if ( obj.call_with_filepath )
+          conditional_inputs{end+1} = filename;
+        end
+        
+        out_file = func( files, conditional_inputs{:}, func_inputs{:} );
       
         if ( obj.save )
           shared_utils.io.require_dir( obj.output_directory );
@@ -830,6 +856,14 @@ classdef LoopedMakeRunner < handle
   end
   
   methods (Access = public, Static = true)    
+    function r = empty_results()
+      
+      %   EMPTY_RESULTS -- Get empty results struct.
+      
+      r = shared_utils.pipeline.LoopedMakeRunner.get_default_output_status( '' );
+      r = r(false);
+    end
+    
     function n = get_directory_name(p)
       if ( ispc() )
         slash = '\';

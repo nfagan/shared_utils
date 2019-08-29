@@ -21,14 +21,6 @@ function events_b = cinterp(events_a, clock_a, clock_b, allow_out_of_range)
 %     to drift. Default is false.
 %
 %     Neither `clock_a` nor `clock_b` can contain NaN values.
-%
-%     IN:
-%       - `events_a` (double)
-%       - `clock_a` (double)
-%       - `clock_b` (double)
-%       - `allow_out_of_range` (logical) |SCALAR|
-%     OUT:
-%       - `events_b` (double)
 
 if ( nargin < 4 )
   allow_out_of_range = false;
