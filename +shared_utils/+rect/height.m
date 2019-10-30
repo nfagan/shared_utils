@@ -4,6 +4,10 @@ function h = height(rect)
 %
 %     See also shared_utils.rect.width
 
-h = rect(4) - rect(2);
+if ( isvector(rect) )
+  h = rect(4) - rect(2);
+else
+  h = rect(:, 4) - rect(:, 2);
+end
 
 end

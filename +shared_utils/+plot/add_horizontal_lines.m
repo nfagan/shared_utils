@@ -4,11 +4,6 @@ function hs = add_horizontal_lines(axs, ys, linespec)
 %
 %     ... add_horizontal_lines( axs, y, 'k--' ) plots horizontal lines in 
 %     each `axs`, centered on `y` coordinate(s), as black dotted lines.
-%
-%     IN:
-%       - `axs` (axes)
-%       - `ys` (double)
-%       - `linespec` (char)
 
 if ( nargin < 3 || isempty(linespec) )
   linespec = 'k--';

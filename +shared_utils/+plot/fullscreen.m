@@ -5,9 +5,6 @@ function f = fullscreen(f)
 %     ... fullscreen() makes the current figure fullscreen.
 %     ... fullscreen( f ) makes the figure handle `f` fullscreen.
 %     f = ... returns the handle(s) to the figure(s).
-%
-%     IN:
-%       - `f` (figure) |OPTIONAL|
 
 if ( nargin < 1 ), f = gcf; end
 
