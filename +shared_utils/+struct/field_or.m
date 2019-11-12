@@ -1,16 +1,9 @@
 function v = field_or(s, field, val)
 
-%   FIELD_OR -- Get field or default value.
+%   FIELD_OR -- Get field or default value from scalar struct.
 %
-%     v = ... field_or( s, FIELD, VALUE ) returns `s.(FIELD)` if `FIELD` is
-%     a field of `s`, or else `VALUE`.
-%
-%     IN:
-%       - `s` (struct)
-%       - `field` (char)
-%       - `val` (/any/)
-%     OUT:
-%       - `v` (/any/)
+%     v = shared_utils.struct.field_or( s, field, value ) returns `s.(field)`
+%     if `field` is a field of `s`, or else `value`.
 
 v = val;
 if ( isfield(s, field) ), v = s.(field); end
