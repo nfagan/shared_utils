@@ -710,7 +710,7 @@ classdef LoopedMakeRunner < handle
       if ( ischar(func_or_kind) )
         switch ( func_or_kind )
           case 'error'
-            throwAsCaller( err );
+            rethrow( err );
           case 'warn'
             obj.log_message( sprintf('\n%s: %s', kind, err.message), 'warn' );
           otherwise
