@@ -14,6 +14,10 @@ function axs = set_lims(axs, kind, to)
 %     OUT:
 %       - `axs` (axes)
 
+if ( isempty(to) )
+  return
+end
+
 arrayfun( @(x) set(x, kind, to), axs );
 
 end
