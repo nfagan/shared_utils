@@ -1,4 +1,4 @@
-function params = parsestruct(params, args)
+function [params, provided] = parsestruct(params, args)
 
 %   PARSESTRUCT -- Assign variable inputs to struct.
 %
@@ -15,6 +15,9 @@ function params = parsestruct(params, args)
 %     cell arrays `C1`, `C2`, ... recursively flattens those arrays into a 
 %     single series of 'field', value pairs, and assigns the contents to 
 %     `S` as above.
+%
+%     [..., provided] = parsestruct(...) also returns a cell array
+%     `provided` giving the set of user-supplied names.
 %
 %     Note that `ARGS` can contain any valid combination of struct, cell,
 %     or 'name', value paired inputs.
@@ -38,6 +41,10 @@ end
 
 N = numel( args );
 
+if ( nargout > 1 )
+  provided = struct();
+end
+
 for i = 1:2:N
   name = args{i};
   
@@ -46,6 +53,14 @@ for i = 1:2:N
   else
     error( get_error_str_unrecognized_param(fieldnames(params), name) );
   end
+  
+  if ( nargout > 1 )
+    provided.(name) = 1;
+  end
+end
+
+if ( nargout > 1 )
+  provided = fieldnames( provided );
 end
 
 end
